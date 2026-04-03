@@ -89,6 +89,55 @@ def test_ggplot_parameters_grouped():
     assert isinstance(p.data, pd.DataFrame)
 
 
+def test_fluent_api_matches_addition():
+    p = (
+        ggplot(data)
+        .aes("x", "y")
+        .geom_point(color="red")
+        .geom_line()
+        .labs(title="fluent")
+        .scale_x_continuous()
+        .coord_trans()
+        .facet_null()
+    )
+    expected = (
+        ggplot(data)
+        + aes("x", "y")
+        + geom_point(color="red")
+        + geom_line()
+        + labs(title="fluent")
+        + scale_x_continuous()
+        + coord_trans()
+        + facet_null()
+    )
+
+    assert p.mapping == expected.mapping
+    assert len(p.layers) == len(expected.layers)
+    assert [layer.geom.__class__ for layer in p.layers] == [
+        layer.geom.__class__ for layer in expected.layers
+    ]
+    assert p.labels == expected.labels
+    assert p.coordinates.__class__ is expected.coordinates.__class__
+    assert p.facet.__class__ is expected.facet.__class__
+    assert len(p.scales) == len(expected.scales)
+
+
+def test_fluent_api_handles_name_collisions():
+    p = (
+        ggplot(data, aes("x", "y"))
+        .geom_point()
+        .add_theme(aspect_ratio=1)
+        .add_guides(color="none")
+        .theme_gray()
+    )
+
+    assert p.theme.getp("aspect_ratio") == 1
+    assert p.guides.color == "none"
+    assert hasattr(p.theme, "getp")
+    assert callable(p.add_theme)
+    assert callable(p.add_guides)
+
+
 def test_data_transforms():
     p = ggplot(aes(x="x", y="np.log(y+1)"), data)
     p = p + geom_point()
