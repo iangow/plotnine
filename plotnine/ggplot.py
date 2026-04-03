@@ -899,3 +899,8 @@ def save_as_pdf_pages(
             with plot_context(plot).rc_context:
                 # Save as a page in the PDF file
                 pdf.savefig(fig, **fig_kwargs)
+
+
+from ._fluent import add_fluent_methods
+
+add_fluent_methods(ggplot)
